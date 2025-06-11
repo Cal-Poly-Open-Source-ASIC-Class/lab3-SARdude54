@@ -14,19 +14,28 @@ TESTS = $(TEST_SUBDIRS:/=)
 # Main Linter and Simulatior is Verilator
 LINTER := verilator
 SIMULATOR := verilator
-SIMULATOR_ARGS := --binary --timing --trace --trace-structs \
-	--assert --timescale 1ns --quiet  
+SIMULATOR_ARGS := --sv --binary --timing --trace --trace-structs \
+	--assert --timescale 1ns --quiet
 SIMULATOR_BINARY := ./obj_dir/V*
-SIMULATOR_SRCS := *.sv
+SIMULATOR_SRCS := $(foreach src, $(RTL_SRCS), $(realpath $(src))) \
+                  $(realpath macros/dffram256x32/hdl/sim/DFFRAM256x32.v) \
+                  $(realpath $(TEST_DIR)/dual_port_ram_tb/dual_port_ram_tb.sv)
+
+
+
+
+
 # Optional use of Icarus as Linter and Simulator
 ifdef ICARUS
 SIMULATOR := iverilog
 SIMULATOR_ARGS := -g2012
 SIMULATOR_BINARY := a.out
-SIMULATOR_SRCS := $(foreach src, $(RTL_SRCS), $(realpath $(src))) *.sv
+SIMULATOR_SRCS := $(foreach src, $(RTL_SRCS), $(realpath $(src))) \
+                  $(realpath macros/dffram256x32/hdl/sim/DFFRAM256x32.v) \
+                  $(realpath $(TEST_DIR)/dual_port_ram_tb/dual_port_ram_tb.sv)
 SIM_TOP := `$(shell pwd)/scripts/top.sh -s`
-# LINT_INCLUDES := ""
 endif
+
 # Gate Level Verification
 ifdef GL
 SIMULATOR := iverilog
@@ -57,7 +66,7 @@ lint: lint_all
 .PHONY: lint_all
 lint_all: 
 	@printf "\n$(GREEN)$(BOLD) ----- Linting All Modules ----- $(RESET)\n"
-	@for src in $(RTL_SRCS); do \
+	@for src in $(9); do \
 		top_module=$$(basename $$src .sv); \
 		top_module=$$(basename $$top_module .v); \
 		printf "Linting $$src . . . "; \
